@@ -19,6 +19,7 @@ Joint deblurring and dewarping of document images using deep learning, for impro
     - [Evaluation](#evaluation)
   - [Project Structure](#project-structure)
   - [Contributing](#contributing)
+    - [Linting and Formatting](#linting-and-formatting)
   - [Authors](#authors)
   - [License](#license)
   - [References](#references)
@@ -69,10 +70,6 @@ We use conda to manage Python and GPU dependencies. An example environment.yml i
 conda env create -f environment.yml
 conda activate warpnet_env
 ```
-
-Note:
-- CUDA support is enabled via cudatoolkit=11.7.
-- Additional Python packages (Kornia, Transformers, DeblurGAN-v2, etc.) are installed via pip.
 
 ---
 
@@ -131,6 +128,20 @@ python scripts/evaluate_ocr.py \
 
 Contributions are welcome. Please open an issue to discuss any major changes before submitting a pull request.
 Ensure that new code includes tests or examples demonstrating its functionality.
+
+### Linting and Formatting
+
+This section describes how to enforce consistent code style and catch errors early using Ruff. Run Ruff to check all Python files:
+
+```sh
+ruff .
+```
+
+Apply automatic fixes for supported rules:
+
+```sh
+ruff --fix .
+```
 
 ---
 
