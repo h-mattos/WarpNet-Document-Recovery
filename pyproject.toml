@@ -1,0 +1,16 @@
+[tool.ruff]
+# Maximum allowed line length
+line-length = 88
+
+# Rules to ignore (adjust as needed)
+ignore = [
+  "E203",  # whitespace before ':'
+]
+
+# Rules to select
+select = [
+  "F",     # pyflakes
+  "E",     # pycodestyle errors
+  "W",     # pycodestyle warnings
+  "C90",   # complexity checks
+]
