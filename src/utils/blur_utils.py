@@ -1,10 +1,11 @@
 import cv2
 import numpy as np
 
-
 def pad_or_crop_kernel(psf, target_size=20):
-    h, w, _ = psf.shape
+    assert psf.ndim == 2, "Expecting greyscale psf kernel"
 
+    h, w = psf.shape
+    
     pad_h = max(0, target_size - h)
     pad_w = max(0, target_size - w)
 
@@ -13,34 +14,25 @@ def pad_or_crop_kernel(psf, target_size=20):
             psf,
             pad_width=(
                 (pad_h // 2, pad_h - pad_h // 2),
-                (pad_w // 2, pad_w - pad_w // 2),
-                (0, 0),
+                (pad_w // 2, pad_w - pad_w // 2)
             ),
-            mode="constant",
+            mode="constant"
         )
 
-    h, w, _ = psf.shape
+    h, w = psf.shape
     crop_h = h - target_size
     crop_w = w - target_size
     h_start = crop_h // 2
     w_start = crop_w // 2
 
-    result = psf[h_start : h_start + target_size, w_start : w_start + target_size, :]
+    result = psf[h_start : h_start + target_size, w_start : w_start + target_size]
     return result
 
 
 def apply_psf_blur(image, psf_kernel):
-    blurred_channels = []
+    assert image.ndim == 2, "Expecting greyscale image"
+    assert psf_kernel.ndim == 2, "Expecting greyscale image"
 
-    # For each channel in RGB, apply blur convolution with PSF kernel
-    for c in range(3):
-        channel = image[:, :, c]
-        kernel = psf_kernel[:, :, c]
-
-        kernel = kernel / (kernel.sum() + 1e-8)
-
-        blurred = cv2.filter2D(channel, -1, kernel)
-        blurred_channels.append(blurred)
-
-    blurred_image = np.stack(blurred_channels, axis=-1)
-    return blurred_image.astype(image.dtype)
+    kernel = psf_kernel / (psf_kernel.sum() + 1e-8)
+    blurred = cv2.filter2D(image, -1, kernel)
+    return blurred.astype(image.dtype)
