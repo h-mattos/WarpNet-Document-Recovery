@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-def pad_or_crop_kernel(psf, target_size=20):
+def pad_or_crop_kernel(psf, target_size=19):
     assert psf.ndim == 2, "Expecting greyscale psf kernel"
 
     h, w = psf.shape

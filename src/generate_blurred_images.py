@@ -24,7 +24,7 @@ for filename in tqdm(os.listdir(input_image_dir)):
     output_path_images = os.path.join(output_blur_dir, f"{img_id}_blur.png")
 
     image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
-    psf_kernel = pad_or_crop_kernel(cv2.imread(psf_path, cv2.IMREAD_GRAYSCALE))
+    psf_kernel = pad_or_crop_kernel(cv2.imread(psf_path, cv2.IMREAD_GRAYSCALE), target_size=19)
 
     cv2.imwrite(output_path_psf, psf_kernel)
 
