@@ -19,6 +19,7 @@ dependencies:
   - torchvision
   - torchaudio
   - ruff
+  - kaggle
   - pip:
       - kornia
       - transformers
