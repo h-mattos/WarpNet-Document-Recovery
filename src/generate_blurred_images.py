@@ -6,11 +6,11 @@ from tqdm import tqdm
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from utils.blur_utils import apply_psf_blur
+from src.utils.blur_utils import apply_psf_blur
 
-input_image_dir = 'data/orig'
-input_psf_dir = 'data/psf'
-output_blur_dir = 'data/blur'
+input_image_dir = 'data/warped'
+input_psf_dir = 'data/BMVC_image_data/psf'
+output_blur_dir = 'data/blurred'
 
 os.makedirs(output_blur_dir, exist_ok=True)
 
