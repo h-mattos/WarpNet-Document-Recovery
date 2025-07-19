@@ -8,14 +8,13 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from utils.blur_utils import apply_psf_blur
 
-input_image_dir = 'data/orig'
-input_psf_dir = 'data/psf'
-output_blur_dir = 'data/blur'
+input_image_dir = "data/orig"
+input_psf_dir = "data/psf"
+output_blur_dir = "data/blur"
 
 os.makedirs(output_blur_dir, exist_ok=True)
 
 for filename in tqdm(os.listdir(input_image_dir)):
-
     img_id = filename.replace("_orig.png", "")
     image_path = os.path.join(input_image_dir, filename)
     psf_path = os.path.join(input_psf_dir, f"{img_id}_psf.png")
