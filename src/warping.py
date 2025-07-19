@@ -12,7 +12,7 @@ from utils import fs
 
 
 IMAGES_PATH = 'data/BMVC_image_data/orig'
-OUTPUT_PATH = 'data/warped_2'
+OUTPUT_PATH = 'data/warped'
 GRID_SIZE = 5, 5
 IMG_SHAPE = 300, 300
 
