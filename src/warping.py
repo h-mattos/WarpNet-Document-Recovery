@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
 from scipy.ndimage import map_coordinates
 from scipy.stats import truncnorm
 import numpy as np
