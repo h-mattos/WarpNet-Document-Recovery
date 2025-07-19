@@ -69,6 +69,8 @@ We use conda to manage Python and GPU dependencies. An example environment.yml i
 ```sh
 conda env create -f environment.yml
 conda activate warpnet_env
+# Update environment
+conda env update -f environment.yml
 ```
 
 ---
