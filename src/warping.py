@@ -45,7 +45,7 @@ def main():
             Image.open(f'{IMAGES_PATH}/{image_file}').convert('L'),
             dtype=np.float32
         ) / 255.0
-        warped = map_coordinates(image, [coords_x, coords_y], order=3, mode='constant', cval=1).reshape(IMG_SHAPE)
+        warped = map_coordinates(image, [coords_y, coords_x], order=3, mode='constant', cval=1).reshape(IMG_SHAPE)
         Image.fromarray((np.minimum(np.maximum(warped, 0), 1) * 255).astype(np.uint8), mode='L').save(f'{OUTPUT_PATH}/{image_file}')
 
 
