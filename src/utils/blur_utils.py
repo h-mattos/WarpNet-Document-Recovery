@@ -1,21 +1,22 @@
 import cv2
 import numpy as np
 
-def pad_or_crop_kernel(psf, target_size = 20):
+
+def pad_or_crop_kernel(psf, target_size=20):
     h, w, _ = psf.shape
-    
+
     pad_h = max(0, target_size - h)
     pad_w = max(0, target_size - w)
-    
+
     if pad_h > 0 or pad_w > 0:
         psf = np.pad(
             psf,
-            pad_width = (
+            pad_width=(
                 (pad_h // 2, pad_h - pad_h // 2),
                 (pad_w // 2, pad_w - pad_w // 2),
-                (0, 0)
+                (0, 0),
             ),
-            mode = "constant"
+            mode="constant",
         )
 
     h, w, _ = psf.shape
@@ -23,9 +24,10 @@ def pad_or_crop_kernel(psf, target_size = 20):
     crop_w = w - target_size
     h_start = crop_h // 2
     w_start = crop_w // 2
-    
+
     result = psf[h_start : h_start + target_size, w_start : w_start + target_size, :]
     return result
+
 
 def apply_psf_blur(image, psf_kernel):
     blurred_channels = []
