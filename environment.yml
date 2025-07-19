@@ -20,6 +20,8 @@ dependencies:
   - torchaudio
   - ruff
   - kaggle
+  - numpy
+  - numba
   - pip:
       - kornia
       - transformers
