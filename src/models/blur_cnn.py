@@ -30,7 +30,7 @@ class PSFDataset(Dataset):
 
         return image, psf
 
-# 2. CNN
+# 2. CNN that outputs a psf kernel corresponding to a blurred image
 class PSFPredictor(nn.Module):
     def __init__(self, psf_size=19):
         super(PSFPredictor, self).__init__()
