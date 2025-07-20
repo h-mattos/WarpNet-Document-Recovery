@@ -39,3 +39,6 @@ for epoch in range(1, N_EPOCHS + 1):
         total_loss += loss.item() * imgs.size(0)
     avg_loss = total_loss / len(dataset)
     print(f"Epoch {epoch:02d}, Loss {avg_loss:.4f}")
+
+torch.save(model.state_dict(), "checkpoints/psf_predictor.pth")
+print("Saved trained model to checkpoints/psf_predictor.pth")
