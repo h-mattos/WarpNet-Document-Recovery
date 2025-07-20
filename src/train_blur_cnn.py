@@ -28,11 +28,11 @@ for epoch in range(1, N_EPOCHS + 1):
     model.train()
     total_loss = 0.0
     for imgs, targets in loop:
-        imags = imgs.to(device)
+        imgs = imgs.to(device)
         targets = targets.to(device)
         preds = model(imgs)
         loss = criterion(preds, targets)
-        loop.set_postfil(batch_loss=loss.item())
+        loop.set_postfix(batch_loss=loss.item())
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
