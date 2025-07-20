@@ -8,7 +8,7 @@ from src.models.blur_cnn import PSFDataset, PSFPredictor
 # Setup dataset and dataloader
 dataset = PSFDataset(
     image_dir = "data/blurred",
-    psf_fir = "data/normalized_psf"
+    psf_dir = "data/normalized_psf"
 )
 dataloader = DataLoader(
     dataset, batch_size=16, shuffle=True, num_workers=4, pin_memory=True

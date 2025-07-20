@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from scipy.signal import fftconvolve
 
 def pad_or_crop_kernel(psf, target_size=19):
     assert psf.ndim == 2, "Expecting greyscale psf kernel"
@@ -36,3 +37,23 @@ def apply_psf_blur(image, psf_kernel):
     kernel = psf_kernel / (psf_kernel.sum() + 1e-8)
     blurred = cv2.filter2D(image, -1, kernel)
     return blurred.astype(image.dtype)
+
+
+# Have to use Wiener deconvolution since deconvolving a blurred image is an ill-posed inverse problem
+def wiener_deblur(blurred, psf, K=0.01):
+    psf_padded = np.zeros_like(blurred)
+    h, w = psf.shape
+    psf_padded[:h, :w] = psf
+    psf_padded = np.fft.ifftshift(psf_padded)
+
+    psf_fft = np.fft.fft2(psf_padded)
+    blurred_fft = np.fft.fft2(blurred)
+
+    psf_power = np.abs(psf_fft) ** 2
+    wiener_filter = np.conj(psf_fft) / (psf_power + K)
+
+    deconv_fft = blurred_fft * wiener_filter
+    deconv = np.fft.ifft2(deconv_fft).real
+    deconv = np.clip(deconv, 0, 1).astype(np.float32)
+    
+    return deconv
