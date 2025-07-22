@@ -6,14 +6,17 @@ from torchvision import transforms
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from sklearn.model_selection import train_test_split
+import numpy as np
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from src.models.warp_cnn import ImageToTensorDataset, ConvRegressor
 
+
 def main():
     image_dir="data/warped"
     displacements_file="data/displacements.npy"
-    ids = [os.path.splitext(f)[0] for f in os.listdir(image_dir) if f.endswith('.png')]
+    blurred_file="data/blurred.h5"
+    ids = np.arange(len([f for f in os.listdir(image_dir) if f.endswith('.png')]))
 
     # 70-15-15 train-validation-holdout split
     train_ids, other_ids = train_test_split(ids, test_size=0.3, random_state=7643)
@@ -31,8 +34,8 @@ def main():
     )
 
     # Setup dataset and dataloader
-    train_dataset = ImageToTensorDataset(image_dir, displacements_file, transform=transform, ids=train_ids)
-    val_dataset = ImageToTensorDataset(image_dir, displacements_file, transform=transform, ids=val_ids)
+    train_dataset = ImageToTensorDataset(image_dir, displacements_file, blurred_file, transform=transform, ids=train_ids)
+    val_dataset = ImageToTensorDataset(image_dir, displacements_file, blurred_file, transform=transform, ids=val_ids)
     # holdout_dataset = ImageToTensorDataset(image_dir, displacements_file, transform=transform, ids=holdout_ids)
 
     train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True, num_workers=4, pin_memory=True)
@@ -43,7 +46,7 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = ConvRegressor().to(device)
     criterion = nn.MSELoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-2)
 
     N_EPOCHS = 5
 
