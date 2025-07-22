@@ -8,19 +8,28 @@ from torch.utils.data import Dataset
 
 # 1. Custom Dataset
 class ImageToTensorDataset(Dataset):
-    def __init__(self, image_dir: str, displacements_file: str, transform=None):
+    def __init__(self, image_dir: str, displacements_file: str, transform=None, ids=None):
         self.image_dir = image_dir
         self.transform = transform
         # load all displacement tensors in one array
         self.displacements = np.load(displacements_file).astype(np.float32)
         # assume one displacement per image, order matches directory listing
-        self.ids = [
+        self.all_ids = [
             os.path.splitext(f)[0]
             for f in sorted(os.listdir(image_dir))
             if f.lower().endswith(".png")
         ]
-        assert self.displacements.shape[0] == len(self.ids), (
-            f"Number of tensors ({self.displacements.shape[0]}) does not match number of images ({len(self.ids)})"
+
+        if ids is not None:
+            self.ids = ids
+            self.ids_to_idx = {id : idx for idx, id in enumerate(self.all_ids)}
+            self.indices = [self.ids_to_idx[id] for id in ids]
+        else:
+            self.ids = self.all_ids
+            self.indices = list(range(len(self.all_ids)))
+
+        assert self.displacements.shape[0] == len(self.all_ids), (
+            f"Number of tensors ({self.displacements.shape[0]}) does not match number of images ({len(self.all_ids)})"
         )
 
     def __len__(self):
@@ -34,7 +43,7 @@ class ImageToTensorDataset(Dataset):
         if self.transform:
             img = self.transform(img)
         # get target tensor from preloaded array
-        target = torch.from_numpy(self.displacements[idx])  # tensor shape (5, 5)
+        target = torch.from_numpy(self.displacements[self.indices[idx]])  # tensor shape (5, 5)
         return img, target
 
 

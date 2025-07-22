@@ -40,6 +40,8 @@ def apply_psf_blur(image, psf_kernel):
 
 
 # Have to use Wiener deconvolution since deconvolving a blurred image is an ill-posed inverse problem
+# https://en.wikipedia.org/wiki/Wiener_deconvolution
+# Code inspired by https://gist.github.com/danstowell/f2d81a897df9e23cc1da
 def wiener_deblur(blurred, psf, K=0.01):
     psf_padded = np.zeros_like(blurred)
     h, w = psf.shape
