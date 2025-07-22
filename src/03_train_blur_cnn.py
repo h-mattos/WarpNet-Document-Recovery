@@ -4,10 +4,15 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from src.models.blur_cnn import PSFDataset, PSFPredictor
+from src.utils.fs import validate_path
+
+CHECKPOINT_OUTPUT = "checkpoints"
+
+validate_path(CHECKPOINT_OUTPUT)
 
 # Setup dataset and dataloader
 dataset = PSFDataset(
-    image_dir = "data/blurred",
+    images_dir = "data/blurred",
     psf_dir = "data/normalized_psf"
 )
 dataloader = DataLoader(
@@ -40,5 +45,5 @@ for epoch in range(1, N_EPOCHS + 1):
     avg_loss = total_loss / len(dataset)
     print(f"Epoch {epoch:02d}, Loss {avg_loss:.4f}")
 
-torch.save(model.state_dict(), "checkpoints/psf_predictor.pth")
-print("Saved trained model to checkpoints/psf_predictor.pth")
+torch.save(model.state_dict(), f'{CHECKPOINT_OUTPUT}/psf_predictor.pth')
+print(f"Saved trained model to {CHECKPOINT_OUTPUT}/psf_predictor.pth")
