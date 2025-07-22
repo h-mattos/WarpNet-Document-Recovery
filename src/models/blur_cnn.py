@@ -9,10 +9,10 @@ from torch.utils.data import Dataset
 # 1. Custom Dataset
 class PSFDataset(Dataset):
     def __init__(self, images_dir, psf_dir):
-        self.image_dir = image_dir
+        self.image_dir = images_dir
         self.psf_dir = psf_dir
 
-        self.ids = [os.path.splitext(f)[0].replace('_blur', '') for f in os.listdir(image_dir) if f.endswith('blur.png')]
+        self.ids = [os.path.splitext(f)[0].replace('_blur', '') for f in os.listdir(images_dir) if f.endswith('blur.png')]
 
     def __len__(self):
         return len(self.ids)
