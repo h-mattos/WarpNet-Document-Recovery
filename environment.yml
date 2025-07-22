@@ -23,6 +23,7 @@ dependencies:
   - numpy
   - numba
   - scikit-learn
+  - h5py
   - pip:
       - kornia
       - transformers
