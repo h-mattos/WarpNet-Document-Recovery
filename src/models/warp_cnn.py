@@ -59,7 +59,7 @@ class ConvRegressor(nn.Module):
             nn.BatchNorm2d(64),
             nn.ReLU(inplace=True),
         )
-        self.pool1 = nn.MaxPool2d(2)  # 300→150
+        self.pool1 = nn.MaxPool2d(2)  # 300->150
 
         self.enc2 = nn.Sequential(
             nn.Conv2d(64, 128, kernel_size=3, padding=1),
@@ -69,7 +69,7 @@ class ConvRegressor(nn.Module):
             nn.BatchNorm2d(128),
             nn.ReLU(inplace=True),
         )
-        self.pool2 = nn.MaxPool2d(2)  # 150→75
+        self.pool2 = nn.MaxPool2d(2)  # 150->75
 
         # Bottleneck
         self.bottleneck = nn.Sequential(
@@ -82,7 +82,7 @@ class ConvRegressor(nn.Module):
         )
 
         # Decoder path
-        self.up2 = nn.ConvTranspose2d(256, 128, kernel_size=2, stride=2)  # 75→150
+        self.up2 = nn.ConvTranspose2d(256, 128, kernel_size=2, stride=2)  # 75->150
         self.dec2 = nn.Sequential(
             nn.Conv2d(256, 128, kernel_size=3, padding=1),
             nn.BatchNorm2d(128),
@@ -91,7 +91,7 @@ class ConvRegressor(nn.Module):
             nn.BatchNorm2d(128),
             nn.ReLU(inplace=True),
         )
-        self.up1 = nn.ConvTranspose2d(128, 64, kernel_size=2, stride=2)   # 150→300
+        self.up1 = nn.ConvTranspose2d(128, 64, kernel_size=2, stride=2)   # 150->300
         self.dec1 = nn.Sequential(
             nn.Conv2d(128, 64, kernel_size=3, padding=1),
             nn.BatchNorm2d(64),

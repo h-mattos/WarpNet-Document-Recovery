@@ -7,7 +7,7 @@ import os
 from sklearn.model_selection import train_test_split
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from src.models.blur_cnn import PSFDataset, PSFPredictor
+from src.models.blur_cnn import BlurCNNDataset, CNNDeblurrer
 from src.utils.fs import validate_path
 import h5py
 
@@ -18,8 +18,8 @@ validate_path(CHECKPOINT_OUTPUT)
 
 def main():
     images_dir = "./data/blurred.h5"
-    psf_dir = "./data/normalized_psf.h5"
-    ids = list(range(h5py.File(psf_dir, 'r')['imgs'].shape[0]))
+    deblurred_dir = "./data/warped.h5"
+    ids = list(range(h5py.File(deblurred_dir, 'r')['imgs'].shape[0]))
 
     # 70-15-15 train-validation-holdout split
     train_ids, other_ids = train_test_split(ids, test_size=0.3, random_state=7643)
@@ -27,17 +27,17 @@ def main():
     print(f"Train size: {len(train_ids)}, Validation size: {len(val_ids)}, Holdout size: {len(holdout_ids)}")
 
     # Setup dataset and dataloader
-    train_dataset = PSFDataset(images_h5_file=images_dir, psf_h5_file=psf_dir, ids=train_ids)
-    val_dataset = PSFDataset(images_h5_file=images_dir, psf_h5_file=psf_dir, ids=val_ids)
-    # holdout_dataset = PSFDataset(images_dir=images_dir, psf_dir=psf_dir, ids=holdout_ids)
+    train_dataset = BlurCNNDataset(blurred_h5_file=images_dir, deblurred_h5_file=deblurred_dir, ids=train_ids)
+    val_dataset = BlurCNNDataset(blurred_h5_file=images_dir, deblurred_h5_file=deblurred_dir, ids=val_ids)
+    # holdout_dataset = BlurCNNDataset(blurred_h5_file=images_dir, deblurred_h5_file=deblurred_dir, ids=holdout_ids)
 
-    train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True, num_workers=4, pin_memory=True)
-    val_loader = DataLoader(val_dataset, batch_size=16, shuffle=False, num_workers=4, pin_memory=True)
-    # holdout_loader = DataLoader(holdout_dataset, batch_size=16, shuffle=False, num_workers=4, pin_memory=True)
+    train_loader = DataLoader(train_dataset, batch_size=8, shuffle=True, num_workers=4, pin_memory=True, persistent_workers=True)
+    val_loader = DataLoader(val_dataset, batch_size=8, shuffle=False, num_workers=4, pin_memory=True, persistent_workers=True)
+    # holdout_loader = DataLoader(holdout_dataset, batch_size=8, shuffle=False, num_workers=4, pin_memory=True, persistent_workers=True)
 
     # Training loop sketch
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = PSFPredictor(psf_size=19).to(device)
+    model = CNNDeblurrer().to(device)
     criterion = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
 
@@ -74,8 +74,8 @@ def main():
         print(f"Epoch {epoch:02d} | Train Loss: {avg_train_loss:.4f} | Val Loss: {avg_val_loss:.4f}")
 
     os.makedirs("checkpoints", exist_ok=True)
-    torch.save(model.state_dict(), f'{CHECKPOINT_OUTPUT}/psf_predictor.pth')
-    print(f"Saved trained model to {CHECKPOINT_OUTPUT}/psf_predictor.pth")
+    torch.save(model.state_dict(), f'{CHECKPOINT_OUTPUT}/deblur_predictor.pth')
+    print(f"Saved trained model to {CHECKPOINT_OUTPUT}/deblur_predictor.pth")
 
 if __name__ == "__main__":
     main()
