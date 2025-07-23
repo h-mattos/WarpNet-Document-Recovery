@@ -76,5 +76,7 @@ class PSFPredictor(nn.Module):
         x = self.encoder(x)
         psf_flat = self.decoder(x)
         psf = psf_flat.view(-1, 1, self.psf_size, self.psf_size)
-        psf = F.softmax(psf.view(batch_size, -1), dim=-1).view_as(psf)
+        psf = torch.relu(psf)
+        psf = psf / (psf.sum(dim=[2,3], keepdim=True) + 1e-8)
+        # psf = F.softmax(psf.view(batch_size, -1), dim=-1).view_as(psf)
         return psf
