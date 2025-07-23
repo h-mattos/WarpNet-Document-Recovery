@@ -5,31 +5,38 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import Dataset
+import h5py
+
 
 # 1. Custom Dataset with ability to subset by ID for train-validation-holdout split
 class PSFDataset(Dataset):
-    def __init__(self, images_dir, psf_dir, ids=None):
-        self.image_dir = images_dir
-        self.psf_dir = psf_dir
+    def __init__(self, images_h5_file: str, psf_h5_file: str, ids=None):
+        self.images_h5_file = images_h5_file
+        self.psf_h5_file = psf_h5_file
+        self.images = None
+        self.psf = None
+
+        self.all_ids = list(range(h5py.File(self.psf_h5_file, 'r')['imgs'].shape[0]))
 
         if ids is not None:
             self.ids = ids
         else:
-            self.ids = [os.path.splitext(f)[0].replace('_blur', '') for f in os.listdir(images_dir) if f.endswith('blur.png')]
+            self.ids = self.all_ids
 
     def __len__(self):
         return len(self.ids)
 
     def __getitem__(self, idx):
-        img_id = self.ids[idx]
-        img_path = os.path.join(self.image_dir, f"{img_id}_blur.png")
-        psf_path = os.path.join(self.psf_dir, f"{img_id}_psf.png")
 
-        image = Image.open(img_path).convert('L')
-        psf = Image.open(psf_path).convert('L')
-
-        image = torch.from_numpy(np.array(image, dtype=np.float32) / 255.0).unsqueeze(0)
-        psf = torch.from_numpy(np.array(psf, dtype=np.float32) / 255.0).unsqueeze(0)
+        if self.images is None:
+            self.images = h5py.File(self.images_h5_file, 'r')['imgs']
+        if self.psf is None:
+            self.psf = h5py.File(self.psf_h5_file, 'r')['imgs']
+        img_arr = self.images[self.ids[idx]]  # shape (300, 300)
+        psf_arr = self.psf[self.ids[idx]]  # shape (19, 19)
+        
+        image = torch.from_numpy(np.array(img_arr, dtype=np.float32) / 255.0).unsqueeze(0)
+        psf = torch.from_numpy(np.array(psf_arr, dtype=np.float32) / 255.0).unsqueeze(0)
 
         return image, psf
 

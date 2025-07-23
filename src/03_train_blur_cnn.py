@@ -9,15 +9,17 @@ from sklearn.model_selection import train_test_split
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from src.models.blur_cnn import PSFDataset, PSFPredictor
 from src.utils.fs import validate_path
+import h5py
+
 
 CHECKPOINT_OUTPUT = "checkpoints"
 
 validate_path(CHECKPOINT_OUTPUT)
 
 def main():
-    images_dir = "data/blurred"
-    psf_dir = "data/normalized_psf"
-    ids = [os.path.splitext(f)[0].replace('_blur', '') for f in os.listdir(images_dir) if f.endswith('blur.png')]
+    images_dir = "./data/blurred.h5"
+    psf_dir = "./data/normalized_psf.h5"
+    ids = list(range(h5py.File(psf_dir, 'r')['imgs'].shape[0]))
 
     # 70-15-15 train-validation-holdout split
     train_ids, other_ids = train_test_split(ids, test_size=0.3, random_state=7643)
@@ -25,8 +27,8 @@ def main():
     print(f"Train size: {len(train_ids)}, Validation size: {len(val_ids)}, Holdout size: {len(holdout_ids)}")
 
     # Setup dataset and dataloader
-    train_dataset = PSFDataset(images_dir=images_dir, psf_dir=psf_dir, ids=train_ids)
-    val_dataset = PSFDataset(images_dir=images_dir, psf_dir=psf_dir, ids=val_ids)
+    train_dataset = PSFDataset(images_h5_file=images_dir, psf_h5_file=psf_dir, ids=train_ids)
+    val_dataset = PSFDataset(images_h5_file=images_dir, psf_h5_file=psf_dir, ids=val_ids)
     # holdout_dataset = PSFDataset(images_dir=images_dir, psf_dir=psf_dir, ids=holdout_ids)
 
     train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True, num_workers=4, pin_memory=True)
