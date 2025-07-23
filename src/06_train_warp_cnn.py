@@ -34,8 +34,8 @@ def main():
     )
 
     # Setup dataset and dataloader
-    train_dataset = ImageToTensorDataset(image_dir, displacements_file, blurred_file, transform=transform, ids=train_ids)
-    val_dataset = ImageToTensorDataset(image_dir, displacements_file, blurred_file, transform=transform, ids=val_ids)
+    train_dataset = ImageToTensorDataset(displacements_file, blurred_file, transform=transform, ids=train_ids)
+    val_dataset = ImageToTensorDataset(displacements_file, blurred_file, transform=transform, ids=val_ids)
     # holdout_dataset = ImageToTensorDataset(image_dir, displacements_file, transform=transform, ids=holdout_ids)
 
     train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True, num_workers=4, pin_memory=True)
@@ -44,9 +44,10 @@ def main():
 
     # Training loop sketch
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f'Device: {device}')
     model = ConvRegressor().to(device)
     criterion = nn.MSELoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-2)
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
 
     N_EPOCHS = 5
 
