@@ -1,0 +1,35 @@
+name: warpnet_env
+channels:
+  - defaults
+  - conda-forge
+  - pytorch
+dependencies:
+  - python=3.10
+  - pip
+  - numpy
+  - scipy
+  - opencv
+  - scikit-image
+  - pillow
+  - pandas
+  - matplotlib
+  - tqdm
+  - jupyterlab
+  - ruff
+  - kaggle
+  - numpy
+  - numba
+  - scikit-learn
+  - h5py
+  - pip:
+      - --extra-index-url https://download.pytorch.org/whl/cu128
+      - torch
+      - torchvision
+      - torchaudio
+
+      - kornia
+      - transformers
+      - datasets
+      - evaluate
+      - pytesseract
+      - tensorboard
