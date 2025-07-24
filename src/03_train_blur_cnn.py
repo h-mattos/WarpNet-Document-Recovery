@@ -4,9 +4,11 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 import sys
 import os
+import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from src.utils.functions import compute_ssim
 from src.models.blur_cnn import BlurCNNDataset, CNNDeblurrer
 from src.utils.fs import validate_path
 import h5py
@@ -43,26 +45,37 @@ def main():
 
     N_EPOCHS = 5
 
+    train_losses = []
+    val_losses = []
+    train_ssims = []
+    val_ssims = []
+
     for epoch in range(1, N_EPOCHS + 1):
         # Training
         loop = tqdm(train_loader, desc=f"Epoch {epoch}/{N_EPOCHS} - Training")
         model.train()
         train_loss_sum = 0.0
+        train_ssim_sum = 0.0
         for imgs, targets in loop:
             imgs = imgs.to(device)
             targets = targets.to(device)
             preds = model(imgs)
             loss = criterion(preds, targets)
-            loop.set_postfix(batch_loss=loss.item())
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
             train_loss_sum += loss.item() * imgs.size(0)
+            train_ssim_sum += compute_ssim(preds, targets) * imgs.size(0)
+            loop.set_postfix(batch_loss=loss.item())
         avg_train_loss = train_loss_sum / len(train_dataset)
+        avg_train_ssim = train_ssim_sum / len(train_dataset)
+        train_losses.append(avg_train_loss)
+        train_ssims.append(avg_train_ssim)
 
         # Validation
         model.eval()
         val_loss_sum = 0.0
+        val_ssim_sum = 0.0
         with torch.no_grad():
             for imgs, targets in val_loader:
                 imgs = imgs.to(device)
@@ -70,12 +83,44 @@ def main():
                 preds = model(imgs)
                 loss = criterion(preds, targets)
                 val_loss_sum += loss.item() * imgs.size(0)
+                val_ssim_sum += compute_ssim(preds, targets) * imgs.size(0)
         avg_val_loss = val_loss_sum / len(val_dataset)
-        print(f"Epoch {epoch:02d} | Train Loss: {avg_train_loss:.4f} | Val Loss: {avg_val_loss:.4f}")
+        avg_val_ssim = val_ssim_sum / len(val_dataset)
+        val_losses.append(avg_val_loss)
+        val_ssims.append(avg_val_ssim)
+        print(f"Epoch {epoch:02d} | Train Loss: {avg_train_loss:.4f} | Val Loss: {avg_val_loss:.4f} | Train SSIM: {avg_train_ssim:.4f} | Val SSIM: {avg_val_ssim:.4f}")
 
     os.makedirs("checkpoints", exist_ok=True)
     torch.save(model.state_dict(), f'{CHECKPOINT_OUTPUT}/deblur_predictor.pth')
     print(f"Saved trained model to {CHECKPOINT_OUTPUT}/deblur_predictor.pth")
+
+    epochs = range(1, N_EPOCHS + 1)
+    
+    plt.figure(figsize=(10, 4))
+
+    # MSE
+    plt.subplot(1, 2, 1)
+    plt.plot(epochs, train_losses, label='Train')
+    plt.plot(epochs, val_losses, label='Val')
+    plt.xlabel('Epoch')
+    plt.ylabel('')
+    plt.title('MSE Loss Curve')
+    plt.legend()
+    plt.grid(True)
+
+    # SSIM
+    plt.subplot(1, 2, 2)
+    plt.plot(epochs, train_ssims, label='Train')
+    plt.plot(epochs, val_ssims, label='Val')
+    plt.xlabel('Epoch')
+    plt.ylabel('')
+    plt.title('SSIM Curve')
+    plt.legend()
+    plt.grid(True)
+
+    plt.tight_layout()
+    plt.savefig(os.path.join(CHECKPOINT_OUTPUT, "metrics_plot_deblur.png"))
+    print(f"Saved metrics plot to {CHECKPOINT_OUTPUT}/metrics_plot_deblur.png")
 
 if __name__ == "__main__":
     main()

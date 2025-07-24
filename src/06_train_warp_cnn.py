@@ -6,6 +6,7 @@ from torchvision import transforms
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from sklearn.model_selection import train_test_split
+import matplotlib.pyplot as plt
 import numpy as np
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -13,10 +14,10 @@ from src.models.warp_cnn import ImageToTensorDataset, ConvRegressor
 
 
 def main():
-    image_dir="data/warped"
+    warped_image_dir="data/warped"
     displacements_file="data/displacements.npy"
     blurred_file="data/blurred.h5"
-    ids = np.arange(len([f for f in os.listdir(image_dir) if f.endswith('.png')]))
+    ids = np.arange(len([f for f in os.listdir(warped_image_dir) if f.endswith('.png')]))
 
     # 70-15-15 train-validation-holdout split
     train_ids, other_ids = train_test_split(ids, test_size=0.3, random_state=7643)
@@ -36,7 +37,7 @@ def main():
     # Setup dataset and dataloader
     train_dataset = ImageToTensorDataset(displacements_file, blurred_file, transform=transform, ids=train_ids)
     val_dataset = ImageToTensorDataset(displacements_file, blurred_file, transform=transform, ids=val_ids)
-    # holdout_dataset = ImageToTensorDataset(image_dir, displacements_file, transform=transform, ids=holdout_ids)
+    # holdout_dataset = ImageToTensorDataset(displacements_file, blurred_file, transform=transform, ids=holdout_ids)
 
     train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True, num_workers=4, pin_memory=True)
     val_loader = DataLoader(val_dataset, batch_size=16, shuffle=False, num_workers=4, pin_memory=True)
@@ -51,6 +52,9 @@ def main():
 
     N_EPOCHS = 5
 
+    train_losses = []
+    val_losses = []
+
     for epoch in range(1, N_EPOCHS + 1):
         # Training
         loop = tqdm(train_loader, desc=f"Epoch {epoch}/{N_EPOCHS} - Training")
@@ -61,12 +65,13 @@ def main():
             targets = targets.to(device)
             preds = model(imgs)
             loss = criterion(preds, targets)
-            loop.set_postfix(batch_loss=loss.item())
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+            loop.set_postfix(batch_loss=loss.item())
             train_loss_sum += loss.item() * imgs.size(0)
         avg_train_loss = train_loss_sum / len(train_dataset)
+        train_losses.append(avg_train_loss)
 
         # Validation
         model.eval()
@@ -79,11 +84,31 @@ def main():
                 loss = criterion(preds, targets)
                 val_loss_sum += loss.item() * imgs.size(0)
         avg_val_loss = val_loss_sum / len(val_dataset)
+        val_losses.append(avg_val_loss)
         print(f"Epoch {epoch:02d} | Train Loss: {avg_train_loss:.4f} | Val Loss: {avg_val_loss:.4f}")
+
 
     os.makedirs("checkpoints", exist_ok=True)
     torch.save(model.state_dict(), "checkpoints/warp_regressor.pth")
     print("Saved trained model to checkpoints/warp_regressor.pth")
+
+    epochs = range(1, N_EPOCHS + 1)
+    
+    plt.figure(figsize=(10, 4))
+
+    # MSE
+    plt.subplot(1, 2, 1)
+    plt.plot(epochs, train_losses, label='Train')
+    plt.plot(epochs, val_losses, label='Val')
+    plt.xlabel('Epoch')
+    plt.ylabel('')
+    plt.title('MSE Loss Curve')
+    plt.legend()
+    plt.grid(True)
+
+    plt.tight_layout()
+    plt.savefig("checkpoints/metrics_plot_dewarp.png")
+    print(f"Saved metrics plot to checkpoints/metrics_plot_dewarp.png")
 
 if __name__ == "__main__":
     main()
