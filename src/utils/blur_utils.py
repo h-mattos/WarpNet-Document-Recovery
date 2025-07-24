@@ -39,6 +39,7 @@ def apply_psf_blur(image, psf_kernel):
     return blurred.astype(image.dtype)
 
 
+# Deprecated -- manually deblurring the images with learned psf kernel did not work:
 # Have to use Wiener deconvolution since deconvolving a blurred image is an ill-posed inverse problem
 # https://en.wikipedia.org/wiki/Wiener_deconvolution
 # Code inspired by https://gist.github.com/danstowell/f2d81a897df9e23cc1da
