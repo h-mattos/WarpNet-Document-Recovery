@@ -1,1 +1,0 @@
-# Some sort of file at the end of everything to evaluate both the blur and warp cnn models on the holdout dataset.
