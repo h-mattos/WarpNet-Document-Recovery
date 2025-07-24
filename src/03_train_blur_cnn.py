@@ -33,9 +33,9 @@ def main():
     val_dataset = BlurCNNDataset(blurred_h5_file=images_dir, deblurred_h5_file=deblurred_dir, ids=val_ids)
     # holdout_dataset = BlurCNNDataset(blurred_h5_file=images_dir, deblurred_h5_file=deblurred_dir, ids=holdout_ids)
 
-    train_loader = DataLoader(train_dataset, batch_size=8, shuffle=True, num_workers=4, pin_memory=True, persistent_workers=True)
-    val_loader = DataLoader(val_dataset, batch_size=8, shuffle=False, num_workers=4, pin_memory=True, persistent_workers=True)
-    # holdout_loader = DataLoader(holdout_dataset, batch_size=8, shuffle=False, num_workers=4, pin_memory=True, persistent_workers=True)
+    train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True, num_workers=4, pin_memory=True, persistent_workers=True)
+    val_loader = DataLoader(val_dataset, batch_size=16, shuffle=False, num_workers=4, pin_memory=True, persistent_workers=True)
+    # holdout_loader = DataLoader(holdout_dataset, batch_size=16, shuffle=False, num_workers=4, pin_memory=True, persistent_workers=True)
 
     # Training loop sketch
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
