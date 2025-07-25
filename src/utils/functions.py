@@ -1,7 +1,8 @@
 import numpy as np
 from scipy.interpolate import RectBivariateSpline
 from skimage.metrics import structural_similarity as ssim
-
+import torch
+import torch.nn.functional as F
 
 def disp2coords(
     displacements: np.ndarray, img_shape: tuple[int], xs: np.ndarray, ys: np.ndarray
@@ -21,3 +22,8 @@ def compute_ssim(pred_tensor, target_tensor):
     for p, t in zip(pred, target):
         ssim_scores.append(ssim(p, t, data_range=1.0))
     return np.mean(ssim_scores)
+
+def compute_psnr(pred_tensor, target_tensor, max_val=1.0):
+    mse = F.mse_loss(pred_tensor, target_tensor, reduction='none').mean(dim=(1,2,3))
+    psnr = 10 * torch.log10(max_val**2 / mse)
+    return psnr.mean().item()
