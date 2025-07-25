@@ -1,0 +1,16 @@
+Codebase
+- Add images blurred off the base images (Josh WIP)
+- Fix performance code to include all scenarios (JOSH WIP)
+- Implement 07_dewarping.py
+- Implement early stopping
+- Run through both training end-to-end, verify that training performance charts are being produced correctly
+- Run experiments (how does hyperparameter tuning affect performance?)
+- Update README.md to reflect the final state of our repo
+
+Final Paper
+- For every "TODO" in the final paper, add necessary source. (Josh WIP)
+- Section 3. Experiments and Results
+    - Include plots from training on both networks (from 03.py and 06.py)
+    - Include final table of performance metrics (from 08.py)
+- Section 4. Other Sections
+    - Include any necessary information based on the rubric, either in a separate section or an already-existing section
