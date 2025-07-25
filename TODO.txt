@@ -1,6 +1,6 @@
 Codebase
-- Add images blurred off the base images (Josh WIP)
-- Fix performance code to include all scenarios (JOSH WIP)
+- Add images blurred off the base images (Josh DONE)
+- Fix performance code to include all scenarios (JOSH DONE)
 - Implement 07_dewarping.py: With the trained model, please add both:
     - The unwarping of the data/blurred (blurred+warped) images under data/dewarped
     - The unwarping of the data/deblurred images (so the result will be both deblurred and dewarped) under data/recovered
