@@ -93,6 +93,7 @@ def main():
     df = pd.DataFrame(results)
     df = df.set_index("Split")
     print(df.round(4))
+    print(df.T.round(4))
 
 if __name__ == "__main__":
     main()

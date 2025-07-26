@@ -131,7 +131,7 @@ def main():
 
     epochs = range(1, epoch + 1)
     
-    plt.figure(figsize=(10, 4))
+    plt.figure(figsize=(9, 3), dpi=300)
 
     # MSE
     plt.subplot(1, 3, 1)
@@ -141,7 +141,6 @@ def main():
     plt.ylabel('')
     plt.title('MSE Loss Curve')
     plt.legend()
-    plt.grid(True)
 
     # SSIM
     plt.subplot(1, 3, 2)
@@ -151,7 +150,6 @@ def main():
     plt.ylabel('')
     plt.title('SSIM Curve')
     plt.legend()
-    plt.grid(True)
 
     # PSNR
     plt.subplot(1, 3, 3)
@@ -161,7 +159,6 @@ def main():
     plt.ylabel('dB')
     plt.title('PSNR Curve')
     plt.legend()
-    plt.grid(True)
 
     plt.tight_layout()
     plt.savefig(os.path.join(CHECKPOINT_OUTPUT, "metrics_plot_deblur.png"))
