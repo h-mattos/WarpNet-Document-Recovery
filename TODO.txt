@@ -4,10 +4,10 @@ Codebase
 - Implement 07_dewarping.py: With the trained model, please add both:
     - The unwarping of the data/blurred (blurred+warped) images under data/dewarped
     - The unwarping of the data/deblurred images (so the result will be both deblurred and dewarped) under data/recovered
-- Implement early stopping
+- Implement early stopping? If we have time and want to.
 - Run through both training end-to-end, verify that training performance charts are being produced correctly
 - Run experiments (how does hyperparameter tuning affect performance?)
-- Update README.md to reflect the final state of our repo
+- Update README.md to reflect the final state of our repo (Josh WIP)
 
 Final Paper
 - For "TODO"s in the final paper, add necessary source. (Josh DONE)
