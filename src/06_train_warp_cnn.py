@@ -94,17 +94,15 @@ def main():
 
     epochs = range(1, N_EPOCHS + 1)
     
-    plt.figure(figsize=(10, 4))
+    plt.figure(figsize=(4, 4), dpi=300)
 
     # MSE
-    plt.subplot(1, 2, 1)
     plt.plot(epochs, train_losses, label='Train')
     plt.plot(epochs, val_losses, label='Val')
     plt.xlabel('Epoch')
     plt.ylabel('')
     plt.title('MSE Loss Curve')
     plt.legend()
-    plt.grid(True)
 
     plt.tight_layout()
     plt.savefig("checkpoints/metrics_plot_dewarp.png")
