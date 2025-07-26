@@ -1,148 +1,159 @@
 # WarpNet-Document-Recovery
+
 Joint deblurring and dewarping of document images using deep learning, for improved OCR readiness. CS7643 Deep Learning project by Joshua Batkhan and Hector Mattos.
 
 ---
 
 ## Table of Contents
 
-- [WarpNet-Document-Recovery](#warpnet-document-recovery)
-  - [Table of Contents](#table-of-contents)
-  - [Overview](#overview)
-  - [Features](#features)
-  - [Installation](#installation)
-    - [Clone repository](#clone-repository)
-  - [Environment setup](#environment-setup)
-    - [Create and activate environment](#create-and-activate-environment)
-  - [Data](#data)
-  - [Usage](#usage)
-    - [Training](#training)
-    - [Evaluation](#evaluation)
-  - [Project Structure](#project-structure)
-  - [Contributing](#contributing)
-    - [Linting and Formatting](#linting-and-formatting)
-  - [Authors](#authors)
-  - [License](#license)
-  - [References](#references)
+- [Overview](#overview)
+- [Features](#features)
+- [Installation](#installation)
+  - [Clone Repository](#clone-repository)
+  - [Environment Setup](#environment-setup)
+- [Data](#data)
+- [Usage](#usage)
+  - [Synthetic Distortion Generation](#synthetic-distortion-generation)
+  - [Training Deblurring Model](#training-deblurring-model)
+  - [Training Dewarping Model](#training-dewarping-model)
+  - [Running the Full Pipeline](#running-the-full-pipeline)
+  - [Evaluating Performance](#evaluating-performance)
+- [Project Structure](#project-structure)
+- [Contributing](#contributing)
+- [Authors](#authors)
+- [License](#license)
+- [References](#references)
 
 ---
 
 ## Overview
 
-This repository implements a unified pipeline for document image recovery.  
-It synthesizes geometric warps and blur on clean page scans, then trains a deep network to jointly  
-rectify warping and remove blur. Final outputs are optimized for downstream OCR accuracy.
+This repository implements a two-stage pipeline for recovering clean document images from synthetically degraded ones. The pipeline first removes blur using a CNN-based deblurring model, then reverses geometric warping using a displacement-grid-based dewarping model. Each model is trained independently using custom datasets constructed from clean document images.
 
 ---
 
 ## Features
 
-- **Synthetic Distortion Generation**  
-  Create warped + blurred inputs via OpenCV remapping, SciPy splines, and custom PSF kernels.  
-- **Page Rectification**  
-  Spatial transformer network based on ResNet to predict dewarping control points (Kornia TPS).  
-- **Deblurring Module**  
-  U-Net or DeblurGAN-v2 restores sharp text from blurred inputs.  
-- **End-to-End Training**  
-  Joint L₁ + perceptual loss optimizes both sub‐modules concurrently.  
-- **Evaluation Suite**  
-  PSNR/SSIM for image fidelity; CER/WER (via pretrained TrOCR) for OCR performance.
+- **Synthetic Degradation Pipeline**: Applies spline-parameterized warping and PSF-based blurring to clean documents.
+- **U-Net Inspired Deblurring Network**: Recovers clean but still-warped images from blurred and warped inputs.
+- **Dewarping Network**: Predicts displacement grids from distorted inputs to restore geometric structure.
+- **Independent Training**: Each model is trained separately with specialized targets.
+- **Image Quality Evaluation**: Tracks MSE, SSIM, and PSNR across train/val/holdout splits.
+- **Full Pipeline Recovery**: Applies both models sequentially to restore clean documents.
 
 ---
 
 ## Installation
 
-### Clone repository
-
-```sh
+### Clone Repository
+```bash
 git clone https://github.gatech.edu/hmattos3/WarpNet-Document-Recovery.git
 cd WarpNet-Document-Recovery
 ```
 
----
-
-## Environment setup
-
-We use conda to manage Python and GPU dependencies. An example environment.yml is provided.
-
-### Create and activate environment
-
-```sh
+### Environment Setup
+```bash
 conda env create -f environment.yml
 conda activate warpnet_env
-# Update environment
-conda env update -f environment.yml
 ```
 
 ---
 
 ## Data
 
-1. Register or login to Kaggle.
-2. Download the “Text Deblurring Dataset with PSF for OCR” (66 K images) from:
-https://www.kaggle.com/datasets/anggadwisunarto/text-deblurring-dataset-with-psf-for-ocr
-1. Unzip into data/raw/
+1. Register on Kaggle.
+2. Download the [Text Deblurring Dataset with PSF for OCR](https://www.kaggle.com/datasets/anggadwisunarto/text-deblurring-dataset-with-psf-for-ocr).
+3. Place extracted images and kernels into `data/BMVC_images_data/`.
+4. Run preprocessing scripts to generate warped, blurred, and recovered datasets:
+```bash
+python 01_warping.py
+python 02_blurring.py
+python 02.1_compress_warp.py
+python 02.2_compress_blur.py
+python 02.4_compress_blur_orig.py
+```
 
 ---
 
 ## Usage
 
-### Training
-
-Train joint dewarping + deblurring
-
-```sh
-python scripts/train.py \
-  --data_dir data/raw \
-  --output_dir experiments/exp01 \
-  --batch_size 16 \
-  --epochs 100 \
-  --learning_rate 1e-4
+### Synthetic Distortion Generation
+```bash
+python 01_warping.py           # Applies geometric warping
+python 02_blurring.py          # Applies PSF-based blur
 ```
 
-### Evaluation
-
-Compute PSNR/SSIM on test set
-
-```sh
-python scripts/evaluate_image_metrics.py \
-  --pred_dir experiments/exp01/predictions \
-  --gt_dir data/raw/original \
-  --metrics psnr ssim
+### Training Deblurring Model
+```bash
+python 03_train_blur_cnn.py
 ```
 
-Compute CER/WER using TrOCR
-
-```sh
-python scripts/evaluate_ocr.py \
-  --pred_dir experiments/exp01/predictions \
-  --gt_text data/annotations/gt.txt
+### Training Dewarping Model
+```bash
+python 06_train_warp_cnn.py
 ```
+
+### Running the Full Pipeline
+```bash
+python 07_dewarping.py         # Apply predicted displacement fields to deblurred images
+```
+
+### Evaluating Performance
+```bash
+python 08_evaluate_performance.py
+```
+Prints MSE, SSIM, and PSNR across Train, Validation, and Holdout splits for:
+- Deblurring only
+- Dewarping only
+- Full pipeline recovery
 
 ---
 
 ## Project Structure
 
-
+```
+├── data/
+│   ├── BMVC_images_data/        # Clean images + PSF kernels
+│   ├── warped.h5                # Warped images
+│   ├── blurred_orig.h5          # Blurred originals
+│   ├── deblurred.h5             # Outputs from deblurring model
+│   ├── dewarped.h5              # Outputs from dewarping model
+│   ├── recovered/               # Final recovered PNGs
+├── src/
+│   ├── models/
+│   │   ├── blur_cnn.py          # U-Net for deblurring
+│   │   ├── warp_cnn.py          # U-Net for displacement prediction
+│   │   ├── train_blur_cnn.py    # Training loop for blur model
+│   │   ├── train_warp_cnn.py    # Training loop for warp model
+│   ├── utils/
+│       ├── blur_utils.py
+│       ├── compress.py
+│       ├── fs.py
+│       ├── functions.py         # SSIM, PSNR, warping utilities
+├── 01_warping.py
+├── 02_blurring.py
+├── 02.1_compress_warp.py
+├── 02.2_compress_blur.py
+├── 02.4_compress_blur_orig.py
+├── 03_train_blur_cnn.py
+├── 05_deblurring.py
+├── 05.1_compress_deblur.py
+├── 06_train_warp_cnn.py
+├── 07_dewarping.py
+├── 08_evaluate_performance.py
+├── environment.yml
+```
 
 ---
 
 ## Contributing
 
-Contributions are welcome. Please open an issue to discuss any major changes before submitting a pull request.
-Ensure that new code includes tests or examples demonstrating its functionality.
+Contributions are welcome. Please open an issue to discuss changes. Include examples/tests with pull requests.
 
 ### Linting and Formatting
-
-This section describes how to enforce consistent code style and catch errors early using Ruff. Run Ruff to check all Python files:
-
-```sh
-ruff .
-```
-
-Apply automatic fixes for supported rules:
-
-```sh
-ruff --fix .
+```bash
+ruff .        # Check
+ruff --fix .  # Auto-fix
 ```
 
 ---
@@ -155,15 +166,16 @@ ruff --fix .
 
 ## License
 
-This project is released under the MIT License. See LICENSE for details.
+This project is released under the MIT License.
 
 ---
 
 ## References
 
-1.	Ma, K. et al. DocUNet: Document image unwarping via a stacked U-Net. CVPR (2018).
-2.	Das, S. et al. DewarpNet: Single-image document unwarping with 3D+2D regression. ICCV (2019).
-3.	Kupyn, O. et al. DeblurGAN: Blind motion deblurring using conditional adversarial nets. arXiv (2017).
-4.	Jiang, X. et al. Revisiting document image dewarping by grid regularization. CVPR (2022).
-5.	Li, H. et al. Foreground & text-lines aware document rectification. ICCV (2023).
-
+1. Ma, K. et al. DocUNet: Document image unwarping via a stacked U-Net. CVPR (2018).
+2. Das, S. et al. DewarpNet: Single-image document unwarping with 3D+2D regression. ICCV (2019).
+3. Jiang, X. et al. Revisiting document image dewarping by grid regularization. CVPR (2022).
+4. Li, H. et al. Foreground & text-lines aware document rectification. ICCV (2023).
+5. Ronneberger, O. et al. U-Net: Convolutional networks for biomedical image segmentation. MICCAI (2015).
+6. Dong, C. et al. Learning a deep convolutional network for image super-resolution. ECCV (2014).
+7. Dan Stowell. Wiener deconvolution in Python (gist). https://gist.github.com/danstowell/f2d81a897df9e23cc1da, 2015. Accessed: 2025-07-21.

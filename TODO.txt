@@ -7,7 +7,7 @@ Codebase
 - Implement early stopping? If we have time and want to.
 - Run through both training end-to-end, verify that training performance charts are being produced correctly
 - Run experiments (how does hyperparameter tuning affect performance?)
-- Update README.md to reflect the final state of our repo (Josh WIP)
+- Update README.md to reflect the final state of our repo (Josh DONE)
 
 Final Paper
 - For "TODO"s in the final paper, add necessary source. (Josh DONE)
