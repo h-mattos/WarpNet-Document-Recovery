@@ -10,7 +10,8 @@ Codebase
 - Update README.md to reflect the final state of our repo
 
 Final Paper
-- For every "TODO" in the final paper, add necessary source. (Josh WIP)
+- For "TODO"s in the final paper, add necessary source. (Josh DONE)
+- For other "TODO"s, fill in based on results from training/tuning
 - Section 3. Experiments and Results
     - Include plots from training on both networks (from 03.py and 06.py)
     - Include final table of performance metrics (from 08.py)
