@@ -9,7 +9,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from src.utils.blur_utils import apply_psf_blur, pad_or_crop_kernel
 
 input_image_dir = "data/warped"
-input_original_dir = "data/BMVC_images_data/orig"
+input_original_dir = "data/BMVC_image_data/orig"
 input_psf_dir = "data/BMVC_image_data/psf"
 output_normalized_psf_dir = "data/normalized_psf"
 output_blur_dir = "data/blurred"

@@ -62,8 +62,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-# Apply inverse warp (dewarping)
-# coords_y_inv = (YY - disp_y).ravel()
-# coords_x_inv = (XX - disp_x).ravel()
-# dewarped = map_coordinates(warped, [coords_y_inv, coords_x_inv], order=3, mode='reflect').reshape((h, w))

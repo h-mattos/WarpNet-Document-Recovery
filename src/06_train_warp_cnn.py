@@ -39,8 +39,10 @@ def main():
     val_dataset = ImageToTensorDataset(displacements_file, blurred_file, transform=transform, ids=val_ids)
     # holdout_dataset = ImageToTensorDataset(displacements_file, blurred_file, transform=transform, ids=holdout_ids)
 
-    train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True, num_workers=4, pin_memory=True)
-    val_loader = DataLoader(val_dataset, batch_size=16, shuffle=False, num_workers=4, pin_memory=True)
+    # train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True, num_workers=4, pin_memory=True)
+    # val_loader = DataLoader(val_dataset, batch_size=16, shuffle=False, num_workers=4, pin_memory=True)
+    train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True,  num_workers=4, pin_memory=True)
+    val_loader   = DataLoader(val_dataset,   batch_size=32, shuffle=False, num_workers=4, pin_memory=True)
     # holdout_loader = DataLoader(holdout_dataset, batch_size=16, shuffle=False, num_workers=4, pin_memory=True)
 
     # Training loop sketch
@@ -48,9 +50,13 @@ def main():
     print(f'Device: {device}')
     model = ConvRegressor().to(device)
     criterion = nn.MSELoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+    optimizer = torch.optim.Adam(model.parameters(), lr=5e-4)
 
-    N_EPOCHS = 5
+    # N_EPOCHS = 5
+    N_EPOCHS      = 50
+    best_val_loss = float('inf')
+    patience      = 3
+    counter       = 0
 
     train_losses = []
     val_losses = []
@@ -85,14 +91,27 @@ def main():
                 val_loss_sum += loss.item() * imgs.size(0)
         avg_val_loss = val_loss_sum / len(val_dataset)
         val_losses.append(avg_val_loss)
-        print(f"Epoch {epoch:02d} | Train Loss: {avg_train_loss:.4f} | Val Loss: {avg_val_loss:.4f}")
+        # print(f"Epoch {epoch:02d} | Train Loss: {avg_train_loss:.4f} | Val Loss: {avg_val_loss:.4f}")
+        # early‐stop logic
+        if avg_val_loss < best_val_loss:
+            best_val_loss = avg_val_loss
+            counter = 0
+            os.makedirs("checkpoints", exist_ok=True)
+            torch.save(model.state_dict(), "checkpoints/best_warp_regressor.pth")
+            print(f"Epoch {epoch:02d}: val improved to {avg_val_loss:.4f}, saved best model")
+        else:
+            counter += 1
+            print(f"Epoch {epoch:02d}: val {avg_val_loss:.4f} (no improvement, {counter}/{patience})")
+            if counter >= patience:
+                print(f"No improvement for {patience} epochs → early stopping")
+                break
 
 
     os.makedirs("checkpoints", exist_ok=True)
     torch.save(model.state_dict(), "checkpoints/warp_regressor.pth")
     print("Saved trained model to checkpoints/warp_regressor.pth")
 
-    epochs = range(1, N_EPOCHS + 1)
+    epochs = range(1, epoch + 1)
     
     plt.figure(figsize=(10, 4))
 
@@ -108,7 +127,8 @@ def main():
 
     plt.tight_layout()
     plt.savefig("checkpoints/metrics_plot_dewarp.png")
-    print(f"Saved metrics plot to checkpoints/metrics_plot_dewarp.png")
+    print(f"Saved metrics plot to checkpoints/metrics_plot_dewarp.png")    
+
 
 if __name__ == "__main__":
     main()

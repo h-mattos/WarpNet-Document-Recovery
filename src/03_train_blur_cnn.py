@@ -33,8 +33,8 @@ def main():
     val_dataset = BlurCNNDataset(blurred_h5_file=images_dir, deblurred_h5_file=deblurred_dir, ids=val_ids)
     # holdout_dataset = BlurCNNDataset(blurred_h5_file=images_dir, deblurred_h5_file=deblurred_dir, ids=holdout_ids)
 
-    train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True, num_workers=4, pin_memory=True, persistent_workers=True)
-    val_loader = DataLoader(val_dataset, batch_size=16, shuffle=False, num_workers=4, pin_memory=True, persistent_workers=True)
+    train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True, num_workers=4, pin_memory=True, persistent_workers=True)
+    val_loader = DataLoader(val_dataset, batch_size=32, shuffle=False, num_workers=4, pin_memory=True, persistent_workers=True)
     # holdout_loader = DataLoader(holdout_dataset, batch_size=16, shuffle=False, num_workers=4, pin_memory=True, persistent_workers=True)
 
     # Training loop sketch
@@ -43,7 +43,10 @@ def main():
     criterion = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
 
-    N_EPOCHS = 5
+    N_EPOCHS      = 50
+    best_val_loss = float('inf')
+    patience      = 3  # stop if no improvement for 3 consecutive epochs
+    counter       = 0
 
     train_losses = []
     val_losses = []
@@ -98,13 +101,35 @@ def main():
         val_losses.append(avg_val_loss)
         val_ssims.append(avg_val_ssim)
         val_psnrs.append(avg_val_psnr)
-        print(f"Epoch {epoch:02d} | Train Loss: {avg_train_loss:.4f} | Val Loss: {avg_val_loss:.4f} | \nTrain SSIM: {avg_train_ssim:.4f} | Val SSIM: {avg_val_ssim:.4f} | \nTrain PSNR: {avg_train_psnr:.4f} | Val PSNR: {avg_val_psnr:.4f}")
+        # print(f"Epoch {epoch:02d} | Train Loss: {avg_train_loss:.4f} | Val Loss: {avg_val_loss:.4f} | \nTrain SSIM: {avg_train_ssim:.4f} | Val SSIM: {avg_val_ssim:.4f} | \nTrain PSNR: {avg_train_psnr:.4f} | Val PSNR: {avg_val_psnr:.4f}")
+        # Early stopping logic
+        if avg_val_loss < best_val_loss:
+            best_val_loss = avg_val_loss
+            counter = 0
+            os.makedirs(CHECKPOINT_OUTPUT, exist_ok=True)
+            torch.save(
+                model.state_dict(),
+                f"{CHECKPOINT_OUTPUT}/best_deblur_predictor.pth",
+            )
+            print(
+                f"Epoch {epoch:02d}: val improved to {avg_val_loss:.4f}, saved best model",
+            )
+        else:
+            counter += 1
+            print(
+                f"Epoch {epoch:02d}: val {avg_val_loss:.4f} (no improvement, {counter}/{patience})",
+            )
+            if counter >= patience:
+                print(f"No improvement for {patience} epochs → early stopping")
+                break
 
-    os.makedirs("checkpoints", exist_ok=True)
-    torch.save(model.state_dict(), f'{CHECKPOINT_OUTPUT}/deblur_predictor.pth')
-    print(f"Saved trained model to {CHECKPOINT_OUTPUT}/deblur_predictor.pth")
+    # os.makedirs("checkpoints", exist_ok=True)
+    # torch.save(model.state_dict(), f'{CHECKPOINT_OUTPUT}/deblur_predictor.pth')
+    # print(f"Saved trained model to {CHECKPOINT_OUTPUT}/deblur_predictor.pth")
+    
+    print("Training complete.")
 
-    epochs = range(1, N_EPOCHS + 1)
+    epochs = range(1, epoch + 1)
     
     plt.figure(figsize=(10, 4))
 

@@ -22,8 +22,7 @@ class ImageToTensorDataset(Dataset):
             self.ids = ids
             self.displacements = self.displacements[self.ids]
         else:
-            self.ids = self.all_ids
-            self.indices = list(range(len(self.all_ids)))
+            self.ids = np.arange(len(self.displacements))
 
 
     def __len__(self):
