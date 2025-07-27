@@ -170,3 +170,4 @@ cython_debug/
 data/*
 .kaggle
 .DS_Store
+checkpoints/
