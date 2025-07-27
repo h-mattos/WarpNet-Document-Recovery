@@ -10,8 +10,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from src.utils.functions import compute_ssim, compute_psnr
 from src.models.warp_cnn import ImageToTensorDataset, ConvRegressor
+from src.utils.fs import validate_path
 
+
+CHECKPOINT_OUTPUT = "checkpoints"
+
+validate_path(CHECKPOINT_OUTPUT)
 
 def main():
     warped_image_dir="data/warped"
@@ -50,7 +56,7 @@ def main():
     print(f'Device: {device}')
     model = ConvRegressor().to(device)
     criterion = nn.MSELoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=5e-4)
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
 
     # N_EPOCHS = 5
     N_EPOCHS      = 50
@@ -60,7 +66,7 @@ def main():
 
     train_losses = []
     val_losses = []
-
+    
     for epoch in range(1, N_EPOCHS + 1):
         # Training
         loop = tqdm(train_loader, desc=f"Epoch {epoch}/{N_EPOCHS} - Training")
@@ -78,10 +84,12 @@ def main():
             train_loss_sum += loss.item() * imgs.size(0)
         avg_train_loss = train_loss_sum / len(train_dataset)
         train_losses.append(avg_train_loss)
-
+        
         # Validation
         model.eval()
         val_loss_sum = 0.0
+        val_ssim_sum = 0.0
+        val_psnr_sum = 0.0
         with torch.no_grad():
             for imgs, targets in val_loader:
                 imgs = imgs.to(device)
@@ -107,13 +115,14 @@ def main():
                 break
 
 
-    os.makedirs("checkpoints", exist_ok=True)
-    torch.save(model.state_dict(), "checkpoints/warp_regressor.pth")
-    print("Saved trained model to checkpoints/warp_regressor.pth")
+    # os.makedirs("checkpoints", exist_ok=True)
+    # torch.save(model.state_dict(), "checkpoints/warp_regressor.pth")
+    # print("Saved trained model to checkpoints/warp_regressor.pth")
+
+    print("Training complete.")
 
     epochs = range(1, epoch + 1)
     
-    plt.figure(figsize=(4, 4), dpi=300)
 
     # MSE
     plt.plot(epochs, train_losses, label='Train')
@@ -124,9 +133,8 @@ def main():
     plt.legend()
 
     plt.tight_layout()
-    plt.savefig("checkpoints/metrics_plot_dewarp.png")
-    print(f"Saved metrics plot to checkpoints/metrics_plot_dewarp.png")    
-
+    plt.savefig(os.path.join(CHECKPOINT_OUTPUT, "metrics_plot_dewarp.png"))
+    print(f"Saved metrics plot to {CHECKPOINT_OUTPUT}/metrics_plot_dewarp.png")
 
 if __name__ == "__main__":
     main()

@@ -20,5 +20,8 @@ def png2h5(img_dir:str, output:str, w:int, h:int) -> None:
         )
         for i, fname in tqdm(enumerate(sorted(images_files)), total=n_images, desc='Compressing'):
             img = Image.open(os.path.join(img_dir, fname))
+            # if img is not grayscale, convert to grayscale
+            if img.mode != 'L':
+                img = img.convert('L')
             arr = np.array(img)[np.newaxis, :, :]
             dset[i] = arr

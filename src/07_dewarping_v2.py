@@ -9,9 +9,9 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from src.models.blur_cnn import CNNDeblurrer
 
-blurred_dir = "data/blurred"
-model_checkpoint = "checkpoints/best_deblur_predictor.pth"
-output_dir = "data/deblurred"
+blurred_dir = "data/deblurred"
+model_checkpoint = "checkpoints/best_dewarp_predictor_v2.pth"
+output_dir = "data/dewarped_v2"
 
 os.makedirs(output_dir, exist_ok=True)
 
@@ -23,7 +23,7 @@ model.eval()
 for file_name in tqdm(sorted(os.listdir(blurred_dir))):
     img_id = file_name.replace("_blur.png", "")
     blurred_path = os.path.join(blurred_dir, file_name)
-    output_path = os.path.join(output_dir, f"{img_id}_deblur.png")
+    output_path = os.path.join(output_dir, f"{img_id}_dewarp.png")
 
     blurred = cv2.imread(blurred_path, cv2.IMREAD_GRAYSCALE).astype(np.float32) / 255.0
     tensor = torch.from_numpy(blurred).unsqueeze(0).unsqueeze(0).to(device)

@@ -1,10 +1,10 @@
 Codebase
 - Add images blurred off the base images (Josh DONE)
 - Fix performance code to include all scenarios (JOSH DONE)
-- Implement 07_dewarping.py: With the trained model, please add both:
-    - The unwarping of the data/blurred (blurred+warped) images under data/dewarped
-    - The unwarping of the data/deblurred images (so the result will be both deblurred and dewarped) under data/recovered
-- Implement early stopping? If we have time and want to.
+- Implement 07_dewarping.py: With the trained model, please add both: (Hector DONE)
+    - The unwarping of the data/blurred (blurred+warped) images under data/dewarped (Hector DONE)
+    - The unwarping of the data/deblurred images (so the result will be both deblurred and dewarped) under data/recovered (Hector DONE)
+- Implement early stopping? If we have time and want to. (Hector DONE)
 - Run through both training end-to-end, verify that training performance charts are being produced correctly
 - Run experiments (how does hyperparameter tuning affect performance?)
 - Update README.md to reflect the final state of our repo (Josh DONE)
