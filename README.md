@@ -1,3 +1,7 @@
+# THIS IS A CLONE OF THE [ORIGINAL REPO](https://github.gatech.edu/hmattos3/WarpNet-Document-Recovery).
+
+Gradescope did not let us connect to the original repo, so we made a clone of it.
+
 # WarpNet-Document-Recovery
 
 Joint deblurring and dewarping of document images using deep learning, for improved OCR readiness. CS7643 Deep Learning project by Joshua Batkhan and Hector Mattos.
